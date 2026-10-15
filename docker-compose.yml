@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: sri_anjaneya_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: sri_anjaneya_db
+      MYSQL_ROOT_PASSWORD: rootpassword123
+      MYSQL_USER: anjaneya_user
+      MYSQL_PASSWORD: anjaneya_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sri_anjaneya_backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      PORT: 8080
+      SPRING_PROFILES_ACTIVE: mysql
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/sri_anjaneya_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: rootpassword123
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+      JWT_SECRET: ${JWT_SECRET:-sriAnjaneyaFertilizersSecureKey2026AgriculturalShopTelanganaIndia1234567890}
+      ADMIN_INITIAL_USERNAME: ${ADMIN_INITIAL_USERNAME:-admin}
+      ADMIN_INITIAL_PASSWORD: ${ADMIN_INITIAL_PASSWORD:-adminPassword123!}
+      SHOP_WHATSAPP_NUMBER: ${SHOP_WHATSAPP_NUMBER:-917095891270}
+      SHOP_PHONE_NUMBER: ${SHOP_PHONE_NUMBER:-917095891270}
+      CORS_ALLOWED_ORIGINS: "*"
+    ports:
+      - "8080:8080"
+
+volumes:
+  mysql_data:

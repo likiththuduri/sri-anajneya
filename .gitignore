@@ -1,0 +1,30 @@
+# Dependencies & Build Artefacts
+backend/target/
+frontend/node_modules/
+frontend/dist/
+
+# Local Database & Upload files
+backend/data/
+backend/uploads/
+*.db
+*.mv.db
+*.trace.db
+
+# Environment Files (Keep secrets out of GitHub!)
+.env
+backend/.env
+frontend/.env
+*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE & OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
