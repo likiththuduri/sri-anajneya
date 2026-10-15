@@ -67,6 +67,10 @@ export async function request<T>(
         // Response was not JSON
       }
 
+      if (response.status === 405 || (response.status === 404 && !API_BASE_URL)) {
+        errorMessage = 'Backend API is not connected to Vercel yet. The Java Spring Boot backend needs to be hosted (e.g. on Railway/Render) and linked via VITE_API_BASE_URL. To test right now, use http://localhost:5173/admin/login on your computer.';
+      }
+
       if (response.status === 401 || response.status === 403) {
         if (endpoint.includes('/api/admin') || endpoint.includes('/api/auth/me')) {
           setToken(null);
