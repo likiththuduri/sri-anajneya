@@ -9,11 +9,13 @@ services:
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: dev
+      - key: H2_DB_PATH
+        value: /tmp/sri_anjaneya_db
       - key: CORS_ALLOWED_ORIGINS
         value: https://sri-anjaneya-fertilizers-pesticides.vercel.app,http://localhost:5173
       - key: JWT_SECRET
         generateValue: true
-      - key: ADMIN_DEFAULT_USERNAME
+      - key: ADMIN_INITIAL_USERNAME
         value: admin
-      - key: ADMIN_DEFAULT_PASSWORD
+      - key: ADMIN_INITIAL_PASSWORD
         value: adminPassword123!

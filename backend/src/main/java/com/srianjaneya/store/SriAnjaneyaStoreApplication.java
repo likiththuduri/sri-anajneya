@@ -39,10 +39,21 @@ public class SriAnjaneyaStoreApplication implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String uploadPath = Paths.get(localUploadDir).toAbsolutePath().toUri().toString();
-        registry.addResourceHandler("/uploads/**")
-                .addResourceLocations(uploadPath)
-                .setCachePeriod(3600);
+        try {
+            Path path = Paths.get(localUploadDir).toAbsolutePath();
+            if (!Files.exists(path)) {
+                Files.createDirectories(path);
+            }
+            String uriStr = path.toUri().toString();
+            if (!uriStr.endsWith("/")) {
+                uriStr += "/";
+            }
+            registry.addResourceHandler("/uploads/**")
+                    .addResourceLocations(uriStr)
+                    .setCachePeriod(3600);
+        } catch (Exception e) {
+            log.warn("Could not register local uploads directory: {}", e.getMessage());
+        }
     }
 
     /**

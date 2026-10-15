@@ -12,10 +12,14 @@ RUN mvn clean package -DskipTests -B
 # Production Runtime
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-RUN addgroup -S spring && adduser -S spring -G spring
+
+RUN addgroup -S spring && adduser -S spring -G spring \
+    && mkdir -p /app/data /app/uploads /tmp \
+    && chown -R spring:spring /app /tmp
+
 USER spring:spring
 
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build --chown=spring:spring /app/target/*.jar app.jar
 
 ENV PORT=8080
 ENV JAVA_OPTS="-Xmx384m -XX:+UseSerialGC"
