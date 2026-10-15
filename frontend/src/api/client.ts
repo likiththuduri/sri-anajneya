@@ -1,5 +1,22 @@
-// Central API Client with JWT authorization and error handling
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+const getApiBaseUrl = (): string => {
+  const envUrl = (import.meta.env.VITE_API_BASE_URL || '').trim();
+  if (envUrl) {
+    return envUrl.replace(/\/$/, '');
+  }
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return '';
+    }
+    // Automatically connect to deployed Render backend when on Vercel
+    if (host.includes('vercel.app')) {
+      return 'https://sri-anjaneya-backend-48cj.onrender.com';
+    }
+  }
+  return '';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export class ApiError extends Error {
   status: number;
