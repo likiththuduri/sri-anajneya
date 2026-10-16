@@ -87,6 +87,13 @@ public class ProductService {
                 dto.getFeatured() != null ? dto.getFeatured() : false
         );
 
+        if (dto.getBookingAvailable() != null) {
+            product.setBookingAvailable(dto.getBookingAvailable());
+        }
+        if (dto.getBookingNotes() != null) {
+            product.setBookingNotes(dto.getBookingNotes().trim());
+        }
+
         Product saved = productRepository.save(product);
         return ProductResponseDto.fromEntity(saved);
     }
@@ -111,6 +118,8 @@ public class ProductService {
         if (StringUtils.hasText(dto.getImageUrl())) product.setImageUrl(dto.getImageUrl().trim());
         if (dto.getActive() != null) product.setActive(dto.getActive());
         if (dto.getFeatured() != null) product.setFeatured(dto.getFeatured());
+        if (dto.getBookingAvailable() != null) product.setBookingAvailable(dto.getBookingAvailable());
+        if (dto.getBookingNotes() != null) product.setBookingNotes(dto.getBookingNotes().trim());
 
         Product updated = productRepository.save(product);
         return ProductResponseDto.fromEntity(updated);

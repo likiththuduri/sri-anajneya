@@ -1,7 +1,14 @@
 import React from 'react';
-import { MapPin, Phone, MessageSquare, Clock, ShieldCheck, Mail, Navigation, Award } from 'lucide-react';
+import { MapPin, Phone, MessageSquare, Clock, ShieldCheck, Navigation, Store } from 'lucide-react';
+import { useSettings } from '../context/SettingsContext';
 
 export const ContactPage: React.FC = () => {
+  const { settings } = useSettings();
+
+  const cleanPhone = (settings.phone || '919000000000').replace(/[^0-9]/g, '');
+  const cleanWhatsApp = (settings.whatsapp || '919000000000').replace(/[^0-9]/g, '');
+  const directionsUrl = settings.directionsUrl || settings.googleMapsUrl || `https://maps.google.com/?q=${encodeURIComponent((settings.shopName || 'SRI ANJANEYA FERTILIZERS') + ' ' + (settings.address || 'Telangana'))}`;
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
       {/* Title */}
@@ -13,7 +20,7 @@ export const ContactPage: React.FC = () => {
           Contact &amp; Store Visit Information
         </h1>
         <p className="text-sm text-gray-600 leading-relaxed">
-          Visit <strong>SRI ANJANEYA FERTILIZERS, PESTICIDES &amp; SEEDS</strong> for genuine agricultural products, certified seeds, crop protection recommendations, and instant counter pickup.
+          Visit <strong>{settings.shopName || 'SRI ANJANEYA FERTILIZERS, PESTICIDES & SEEDS'}</strong> for genuine agricultural products, certified seeds, crop protection recommendations, and instant counter pickup.
         </p>
       </div>
 
@@ -21,52 +28,54 @@ export const ContactPage: React.FC = () => {
         {/* Contact Cards */}
         <div className="lg:col-span-5 space-y-4">
           {/* Shop Card */}
-          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-5">
             <h3 className="font-extrabold text-gray-900 text-lg border-b border-gray-100 pb-3">
               Store Counter Details
             </h3>
 
+            {/* Dynamic Store Address */}
             <div className="flex items-start gap-3.5 text-xs sm:text-sm text-gray-700">
               <MapPin className="w-5 h-5 text-agri-600 shrink-0 mt-0.5" />
               <div>
                 <strong className="block text-gray-900 text-sm">Shop Address:</strong>
-                <span>SRI ANJANEYA FERTILIZERS, PESTICIDES &amp; SEEDS</span><br />
-                <span>Main Road, Near Rythu Bharosa Kendram</span><br />
-                <span>Telangana - 508213, India</span>
+                <span className="font-semibold text-agri-950 block">
+                  {settings.shopName || 'SRI ANJANEYA FERTILIZERS, PESTICIDES & SEEDS'}
+                </span>
+                <span className="text-gray-600 whitespace-pre-line leading-relaxed block mt-1">
+                  {settings.address || 'Main Road, Telangana, India - 508001'}
+                </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5 text-xs sm:text-sm text-gray-700">
-              <Phone className="w-5 h-5 text-agri-600 shrink-0" />
-              <div>
-                <strong className="block text-gray-900 text-sm">Direct Phone:</strong>
-                <a href="tel:917095891270" className="text-agri-700 font-bold hover:underline">
-                  +91 70958 91270
-                </a>
-              </div>
+            {/* Action buttons - NO raw phone strings */}
+            <div className="pt-2 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <a
+                href={`tel:${cleanPhone}`}
+                className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-agri-700 hover:bg-agri-800 text-white font-bold text-xs shadow-sm transition active:scale-95"
+              >
+                <Phone className="w-4 h-4" />
+                <span>Call Now</span>
+              </a>
+
+              <a
+                href={`https://wa.me/${cleanWhatsApp}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-xs shadow-sm transition active:scale-95"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>WhatsApp Us</span>
+              </a>
             </div>
 
-            <div className="flex items-center gap-3.5 text-xs sm:text-sm text-gray-700">
-              <MessageSquare className="w-5 h-5 text-green-600 shrink-0" />
-              <div>
-                <strong className="block text-gray-900 text-sm">WhatsApp Support:</strong>
-                <a
-                  href="https://wa.me/917095891270?text=Hello%20SRI%20ANJANEYA%20FERTILIZERS,%20I%20need%20product%20details."
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-green-700 font-bold hover:underline"
-                >
-                  +91 70958 91270 (Click to Chat)
-                </a>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3.5 text-xs sm:text-sm text-gray-700">
+            {/* Store Timings */}
+            <div className="flex items-start gap-3.5 text-xs sm:text-sm text-gray-700 pt-2 border-t border-gray-100">
               <Clock className="w-5 h-5 text-agri-600 shrink-0 mt-0.5" />
               <div>
                 <strong className="block text-gray-900 text-sm">Store Timings:</strong>
-                <span>Monday – Saturday: 7:00 AM – 8:30 PM</span><br />
-                <span>Sunday: 7:00 AM – 2:00 PM</span>
+                <span className="text-gray-600">
+                  {settings.openingHours || 'Monday – Sunday: 7:00 AM – 8:30 PM'}
+                </span>
               </div>
             </div>
           </div>
@@ -77,49 +86,61 @@ export const ContactPage: React.FC = () => {
               <ShieldCheck className="w-5 h-5 text-agri-600" />
               <span>How Local Counter Pickup Works</span>
             </div>
-            <p className="leading-relaxed">
-              1. Book your fertilizers or seeds online or via WhatsApp.<br />
-              2. Keep your generated Order Number (e.g. <code>SA-20261015-1001</code>) handy.<br />
-              3. Our counter staff will verify and hand over your items.<br />
-              4. Payment can be made in Cash or through UPI QR code at the counter.
+            <p className="leading-relaxed whitespace-pre-line">
+              {settings.pickupInstructions || 
+                "1. Book your fertilizers, pesticides, or seeds online through Advance Booking or Cart.\n2. Keep your generated Booking Reference (e.g. BK-20261016-XXXX) handy.\n3. Our counter staff will verify inventory and prepare your items.\n4. Payment is settled at the shop counter via cash or UPI QR code."
+              }
             </p>
           </div>
         </div>
 
         {/* Directions & Map Visual */}
         <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-6">
-          <div>
-            <h3 className="font-extrabold text-gray-900 text-lg">
-              Find Our Store in Telangana
-            </h3>
-            <p className="text-xs text-gray-500 mt-1">
-              Conveniently located on the main road for tractor and agricultural transport loading.
-            </p>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 className="font-extrabold text-gray-900 text-lg">
+                Find Our Store in {settings.state || 'Telangana'}
+              </h3>
+              <p className="text-xs text-gray-500 mt-1">
+                Conveniently located for tractor, auto-trolley, and farm transport loading.
+              </p>
+            </div>
+            <a
+              href={directionsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-agri-700 hover:bg-agri-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition active:scale-95"
+            >
+              <Navigation className="w-3.5 h-3.5" />
+              <span>Get Directions</span>
+            </a>
           </div>
 
           {/* Interactive Map Visual */}
-          <div className="rounded-xl overflow-hidden border border-gray-200 bg-gray-100 aspect-video relative flex items-center justify-center text-center p-6">
-            <div className="space-y-3">
-              <div className="w-12 h-12 bg-agri-700 text-white rounded-full flex items-center justify-center mx-auto shadow-lg animate-bounce">
-                <MapPin className="w-6 h-6" />
+          <div className="rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 aspect-video relative flex items-center justify-center text-center p-6 shadow-inner">
+            <div className="space-y-3 max-w-md">
+              <div className="w-14 h-14 bg-agri-700 text-white rounded-full flex items-center justify-center mx-auto shadow-lg animate-bounce">
+                <MapPin className="w-7 h-7" />
               </div>
               <div>
-                <h4 className="font-bold text-gray-900 text-base">
-                  SRI ANJANEYA FERTILIZERS, PESTICIDES &amp; SEEDS
+                <h4 className="font-extrabold text-gray-900 text-base">
+                  {settings.shopName || 'SRI ANJANEYA FERTILIZERS, PESTICIDES & SEEDS'}
                 </h4>
-                <p className="text-xs text-gray-500 mt-1">
-                  Main Road, Near Rythu Bharosa Kendram, Telangana - 508213
+                <p className="text-xs text-gray-600 mt-1 font-medium">
+                  {settings.address || 'Main Road, Telangana, India - 508001'}
                 </p>
               </div>
-              <a
-                href="https://maps.google.com/?q=SRI+ANJANEYA+FERTILIZERS+Telangana"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-agri-700 hover:bg-agri-800 text-white text-xs font-bold px-4 py-2 rounded-lg shadow transition"
-              >
-                <Navigation className="w-3.5 h-3.5" />
-                <span>Open in Google Maps</span>
-              </a>
+              <div className="pt-2 flex justify-center gap-3">
+                <a
+                  href={directionsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-agri-800 hover:bg-agri-900 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md transition"
+                >
+                  <Navigation className="w-3.5 h-3.5" />
+                  <span>Open in Google Maps</span>
+                </a>
+              </div>
             </div>
           </div>
 

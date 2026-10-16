@@ -1,10 +1,13 @@
 import React from 'react';
 import { MessageSquare } from 'lucide-react';
+import { useSettings } from '../../context/SettingsContext';
 
 export const WhatsAppFloatButton: React.FC = () => {
-  const shopWhatsAppNumber = '917095891270';
-  const message = 'Hello SRI ANJANEYA FERTILIZERS, PESTICIDES & SEEDS! I need assistance with agricultural products and availability.';
-  const url = `https://wa.me/${shopWhatsAppNumber}?text=${encodeURIComponent(message)}`;
+  const { settings } = useSettings();
+  const cleanWhatsApp = (settings.whatsapp || '919000000000').replace(/[^0-9]/g, '');
+  const shopName = settings.shopName || 'SRI ANJANEYA FERTILIZERS, PESTICIDES & SEEDS';
+  const message = `Hello ${shopName}! I need assistance with agricultural products and availability.`;
+  const url = `https://wa.me/${cleanWhatsApp}?text=${encodeURIComponent(message)}`;
 
   return (
     <a

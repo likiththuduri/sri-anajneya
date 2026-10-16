@@ -43,6 +43,12 @@ public class Product {
     @Column(nullable = false)
     private Boolean featured = false;
 
+    @Column(name = "booking_available", nullable = false)
+    private Boolean bookingAvailable = true;
+
+    @Column(name = "booking_notes", columnDefinition = "TEXT")
+    private String bookingNotes;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
@@ -109,6 +115,12 @@ public class Product {
 
     public Boolean getFeatured() { return featured; }
     public void setFeatured(Boolean featured) { this.featured = featured; }
+
+    public Boolean getBookingAvailable() { return bookingAvailable; }
+    public void setBookingAvailable(Boolean bookingAvailable) { this.bookingAvailable = bookingAvailable; }
+
+    public String getBookingNotes() { return bookingNotes; }
+    public void setBookingNotes(String bookingNotes) { this.bookingNotes = bookingNotes; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

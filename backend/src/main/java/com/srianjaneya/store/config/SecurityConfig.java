@@ -71,6 +71,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/orders").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/orders/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/shop/**").permitAll()
+                // Public Advance Bookings & Website Sections
+                .requestMatchers(HttpMethod.POST, "/api/bookings").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/bookings/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/sections/**").permitAll()
                 // H2 Console for dev inspection
                 .requestMatchers("/h2-console/**").permitAll()
                 // Admin Protected APIs

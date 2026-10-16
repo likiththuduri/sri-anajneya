@@ -19,6 +19,8 @@ public class ProductResponseDto {
     private String imageUrl;
     private Boolean active;
     private Boolean featured;
+    private Boolean bookingAvailable;
+    private String bookingNotes;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -41,6 +43,8 @@ public class ProductResponseDto {
         dto.setImageUrl(p.getImageUrl());
         dto.setActive(p.getActive());
         dto.setFeatured(p.getFeatured());
+        dto.setBookingAvailable(p.getBookingAvailable() != null ? p.getBookingAvailable() : true);
+        dto.setBookingNotes(p.getBookingNotes());
         dto.setCreatedAt(p.getCreatedAt());
         dto.setUpdatedAt(p.getUpdatedAt());
         return dto;
@@ -84,6 +88,12 @@ public class ProductResponseDto {
 
     public Boolean getFeatured() { return featured; }
     public void setFeatured(Boolean featured) { this.featured = featured; }
+
+    public Boolean getBookingAvailable() { return bookingAvailable; }
+    public void setBookingAvailable(Boolean bookingAvailable) { this.bookingAvailable = bookingAvailable; }
+
+    public String getBookingNotes() { return bookingNotes; }
+    public void setBookingNotes(String bookingNotes) { this.bookingNotes = bookingNotes; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

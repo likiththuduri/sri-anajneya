@@ -36,6 +36,8 @@ export const AdminProductsPage: React.FC = () => {
   const [formImageUrl, setFormImageUrl] = useState('');
   const [formActive, setFormActive] = useState(true);
   const [formFeatured, setFormFeatured] = useState(false);
+  const [formBookingAvailable, setFormBookingAvailable] = useState(true);
+  const [formBookingNotes, setFormBookingNotes] = useState('');
   const [modalError, setModalError] = useState<string | null>(null);
 
   const loadData = async () => {
@@ -70,6 +72,8 @@ export const AdminProductsPage: React.FC = () => {
     setFormImageUrl('');
     setFormActive(true);
     setFormFeatured(false);
+    setFormBookingAvailable(true);
+    setFormBookingNotes('');
     setModalError(null);
     setModalOpen(true);
   };
@@ -86,6 +90,8 @@ export const AdminProductsPage: React.FC = () => {
     setFormImageUrl(p.imageUrl);
     setFormActive(p.active);
     setFormFeatured(p.featured);
+    setFormBookingAvailable(p.bookingAvailable !== false);
+    setFormBookingNotes(p.bookingNotes || '');
     setModalError(null);
     setModalOpen(true);
   };
@@ -147,6 +153,8 @@ export const AdminProductsPage: React.FC = () => {
         imageUrl: formImageUrl.trim(),
         active: formActive,
         featured: formFeatured,
+        bookingAvailable: formBookingAvailable,
+        bookingNotes: formBookingNotes.trim(),
       };
 
       if (editingProduct) {
@@ -619,6 +627,33 @@ export const AdminProductsPage: React.FC = () => {
                     <span>Featured on Home</span>
                   </label>
                 </div>
+              </div>
+
+              {/* Advance Booking Configuration */}
+              <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 space-y-2.5">
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-amber-950">
+                  <input
+                    type="checkbox"
+                    checked={formBookingAvailable}
+                    onChange={(e) => setFormBookingAvailable(e.target.checked)}
+                    className="w-4 h-4 text-agri-600 rounded"
+                  />
+                  <span>Allow Advance Booking (Customer can reserve without payment)</span>
+                </label>
+                {formBookingAvailable && (
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                      Advance Booking Notes (Optional):
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Recommended for early booking before upcoming season"
+                      value={formBookingNotes}
+                      onChange={(e) => setFormBookingNotes(e.target.value)}
+                      className="w-full px-3 py-1.5 rounded-lg border border-gray-300 text-xs focus:ring-2 focus:ring-agri-500 bg-white"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Cloudinary Image Upload Section */}
