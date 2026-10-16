@@ -36,11 +36,19 @@ export const HomePage: React.FC = () => {
   }, []);
 
   const getSection = (key: string): WebsiteSection | undefined => {
-    return sections.find((s) => s.sectionKey === key);
+    return sections.find((s) => 
+      s.sectionKey === key || 
+      s.sectionKey === key.replace('_section', '') ||
+      (key === 'hero_section' && s.sectionKey === 'hero') ||
+      (key === 'categories_section' && s.sectionKey === 'categories') ||
+      (key === 'benefits_section' && s.sectionKey === 'benefits') ||
+      (key === 'advance_booking_promo' && s.sectionKey === 'booking_info') ||
+      (key === 'store_location_map' && s.sectionKey === 'location_map')
+    );
   };
 
   const isSectionEnabled = (key: string): boolean => {
-    if (sections.length === 0) return true; // Default visible if not loaded
+    if (sections.length === 0) return true; // Default visible if not loaded or empty
     const sec = getSection(key);
     return sec ? sec.enabled : true;
   };

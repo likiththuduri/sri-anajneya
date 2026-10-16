@@ -21,6 +21,27 @@ public class WebsiteSectionService {
         this.sectionRepository = sectionRepository;
     }
 
+    @jakarta.annotation.PostConstruct
+    @Transactional
+    public void initDefaultSections() {
+        if (sectionRepository.count() == 0) {
+            List<WebsiteSection> defaults = List.of(
+                new WebsiteSection("announcement_bar", "Announcement Banner", "Top agricultural notice and store updates", null, null, true, 1),
+                new WebsiteSection("hero", "Hero Banner", "Main banner featuring actual shop photograph and store introduction", "Explore Products", "/products", true, 2),
+                new WebsiteSection("categories", "Product Categories", "Fertilizers, Pesticides, Certified Seeds, and Micronutrients", "View Category", "/products", true, 3),
+                new WebsiteSection("featured_products", "Featured Agricultural Inputs", "Top-selling fertilizers and crop protection inputs", "View All Products", "/products", true, 4),
+                new WebsiteSection("benefits", "Why Choose Sri Anjaneya", "Govt approved inputs, genuine quality, and fair farmer pricing", null, null, true, 5),
+                new WebsiteSection("booking_info", "Advance Product Booking", "Reserve scarce seasonal fertilizers and hybrid seeds in advance", "Book Online", "/products", true, 6),
+                new WebsiteSection("pickup_instructions", "Local Counter Pickup Policy", "Fast counter verification, vehicle loading, and UPI/Cash payment", "View Instructions", "/contact", true, 7),
+                new WebsiteSection("location_map", "Store Location & Directions", "Easy road access in Telangana for tractor and transport loading", "Get Directions", "/contact", true, 8),
+                new WebsiteSection("contact_section", "Contact & Store Hours", "Store timings, Call Now, and WhatsApp Us links", "Contact Us", "/contact", true, 9),
+                new WebsiteSection("footer", "Footer & Shop Information", "Agricultural disclaimer, quick links, and copyright", null, null, true, 10),
+                new WebsiteSection("floating_whatsapp", "Quick WhatsApp Floating Button", "Instant chat with store counter for stock inquiries", "WhatsApp Us", null, true, 11)
+            );
+            sectionRepository.saveAll(defaults);
+        }
+    }
+
     public List<WebsiteSectionDto> getAllSections() {
         return sectionRepository.findAllByOrderByDisplayOrderAsc()
                 .stream()
