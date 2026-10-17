@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Calendar, CheckCircle2, MessageSquare, Copy, Check, AlertCircle, ShoppingBag, MapPin, Sparkles } from 'lucide-react';
 import { Product, Booking } from '../../types';
 import { bookingsApi } from '../../api/bookings';
+import { resolveImageUrl, DEFAULT_PRODUCT_FALLBACK } from '../../utils/imageUrl';
 
 interface BookingModalProps {
   product: Product | null;
@@ -210,7 +211,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ product, isOpen, onC
               {/* Product Preview Card */}
               <div className="flex items-center gap-3.5 p-3 rounded-2xl bg-gray-50 border border-gray-200">
                 <img
-                  src={product.imageUrl || '/logo.svg'}
+                  src={resolveImageUrl(product.imageUrl, DEFAULT_PRODUCT_FALLBACK)}
                   alt={product.name}
                   className="w-16 h-16 object-cover rounded-xl border border-gray-200 shrink-0 bg-white"
                   onError={(e) => { (e.target as HTMLElement).style.display = 'none'; }}

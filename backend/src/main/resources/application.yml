@@ -52,9 +52,15 @@ admin:
 # Shop Information
 shop:
   name: "SRI ANJANEYA FERTILIZERS, PESTICIDES & SEEDS"
-  whatsapp: ${SHOP_WHATSAPP_NUMBER:917095891270}
-  phone: ${SHOP_PHONE_NUMBER:917095891270}
+  whatsapp: ${SHOP_WHATSAPP_NUMBER:7095891270}
+  phone: ${SHOP_PHONE_NUMBER:7095891270}
   location: "Main Road, Telangana, India"
+
+# Online Payment Gateway (Razorpay)
+razorpay:
+  key:
+    id: ${RAZORPAY_KEY_ID:}
+    secret: ${RAZORPAY_KEY_SECRET:}
 
 # Allowed CORS Origins (comma-separated or list)
 cors:

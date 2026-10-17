@@ -25,25 +25,25 @@ export const CategoryProductsPage: React.FC<CategoryProductsPageProps> = ({
   const categoryMetadata: Record<string, { title: string; subtitle: string; icon: any; color: string }> = {
     fertilizers: {
       title: 'Fertilizers & Soil Nutrition',
-      subtitle: 'Primary Macronutrients (Urea, DAP, MOP, Complex NPK) & Soil Enriched Conditioners for high-yield farming in Telangana.',
+      subtitle: 'Primary Macronutrients (Urea, DAP, MOP, Complex NPK) and Soil Conditioners.',
       icon: Sprout,
       color: 'bg-gradient-to-r from-emerald-800 to-green-900',
     },
     pesticides: {
       title: 'Crop Protection & Pesticides',
-      subtitle: 'Approved Insecticides, Fungicides, and Herbicides from Bayer, FMC, Syngenta, and Coromandel for complete pest control.',
+      subtitle: 'Insecticides, Fungicides, and Herbicides for crop protection.',
       icon: Bug,
       color: 'bg-gradient-to-r from-amber-800 to-yellow-950',
     },
     seeds: {
-      title: 'Certified Hybrid Seeds',
-      subtitle: 'Govt.-tested high germination hybrid seeds: Rasi Bollgard II Cotton, Bayer Paddy, Pioneer Maize, and Kaveri Chilli seeds.',
+      title: 'Seeds',
+      subtitle: 'Cotton, Paddy, Maize, and Vegetable seeds.',
       icon: Wheat,
       color: 'bg-gradient-to-r from-teal-800 to-emerald-950',
     },
     micronutrients: {
       title: 'Micronutrients & Foliar Nutrition',
-      subtitle: 'Zinc, Boron, Ferrous, and Chelated Multi-Micronutrient boosters to prevent crop deficiencies and maximize harvest weight.',
+      subtitle: 'Zinc, Boron, Ferrous, and Multi-Micronutrient formulations for crop nutrition.',
       icon: Droplet,
       color: 'bg-gradient-to-r from-cyan-900 to-blue-950',
     },
@@ -51,7 +51,7 @@ export const CategoryProductsPage: React.FC<CategoryProductsPageProps> = ({
 
   const currentMeta = categoryMetadata[slug.toLowerCase()] || {
     title: categoryTitle || 'Agricultural Products',
-    subtitle: 'Quality agricultural inputs tested for Telangana agricultural conditions.',
+    subtitle: 'Quality agricultural inputs for crop cultivation.',
     icon: Sprout,
     color: 'bg-gradient-to-r from-agri-900 to-agri-950',
   };

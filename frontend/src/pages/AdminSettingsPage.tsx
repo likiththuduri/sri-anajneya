@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { 
   Save, Store, Phone, MessageSquare, MapPin, Image as ImageIcon, 
   CheckCircle2, AlertCircle, Upload, RotateCcw, Navigation, Clock, 
@@ -10,12 +11,34 @@ import { sectionsApi } from '../api/sections';
 import { useSettings } from '../context/SettingsContext';
 import { useToast } from '../context/ToastContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { resolveImageUrl, DEFAULT_HERO_FALLBACK } from '../utils/imageUrl';
 
-export const AdminSettingsPage: React.FC = () => {
+export interface AdminSettingsPageProps {
+  defaultTab?: 'branding' | 'homepage' | 'address' | 'contact' | 'sections';
+}
+
+export const AdminSettingsPage: React.FC<AdminSettingsPageProps> = ({ defaultTab }) => {
   const { settings, refreshSettings } = useSettings();
   const { showToast } = useToast();
+  const [searchParams] = useSearchParams();
 
-  const [activeTab, setActiveTab] = useState<'branding' | 'homepage' | 'address' | 'contact' | 'sections'>('branding');
+  const getInitialTab = (): 'branding' | 'homepage' | 'address' | 'contact' | 'sections' => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'location' || tabParam === 'address') return 'address';
+    if (tabParam === 'appearance' || tabParam === 'homepage') return 'homepage';
+    if (tabParam === 'profile' || tabParam === 'branding') return 'branding';
+    if (tabParam === 'contact') return 'contact';
+    if (tabParam === 'sections') return 'sections';
+    return defaultTab || 'branding';
+  };
+
+  const [activeTab, setActiveTab] = useState<'branding' | 'homepage' | 'address' | 'contact' | 'sections'>(getInitialTab());
+
+  useEffect(() => {
+    if (defaultTab) {
+      setActiveTab(defaultTab);
+    }
+  }, [defaultTab]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -376,14 +399,14 @@ export const AdminSettingsPage: React.FC = () => {
               <div className="flex items-center gap-3">
                 <div className="w-20 h-20 rounded-2xl bg-white border border-gray-200 p-2 flex items-center justify-center shadow-xs">
                   <img
-                    src={logoUrl || '/logo.svg'}
+                    src={resolveImageUrl(logoUrl, '/anjaneya-logo.jpeg')}
                     alt="Logo Light Preview"
                     className="w-full h-full object-contain"
                   />
                 </div>
                 <div className="w-20 h-20 rounded-2xl bg-agri-950 p-2 flex items-center justify-center shadow-xs">
                   <img
-                    src={logoUrl || '/logo.svg'}
+                    src={resolveImageUrl(logoUrl, '/anjaneya-logo.jpeg')}
                     alt="Logo Dark Preview"
                     className="w-full h-full object-contain"
                   />
@@ -411,19 +434,17 @@ export const AdminSettingsPage: React.FC = () => {
                     <span>{isUploading ? 'Uploading to Cloud...' : logoUrl ? 'Replace Logo' : 'Choose Logo Image'}</span>
                   </button>
 
-                  {logoUrl && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setLogoUrl('');
-                        showToast('Restored default official agricultural emblem logo.', 'info');
-                      }}
-                      className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs font-bold transition"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5" />
-                      <span>Restore Default Logo</span>
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLogoUrl('/anjaneya-logo.jpeg');
+                      showToast('Restored official uploaded logo.', 'info');
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs font-bold transition"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Restore Default Logo</span>
+                  </button>
                 </div>
                 <p className="text-[11px] text-gray-500">
                   Select a PNG, SVG, or JPG image from your phone gallery or computer files.
@@ -488,7 +509,7 @@ export const AdminSettingsPage: React.FC = () => {
             {/* Live Hero Background Preview with Green Overlay */}
             <div className="relative rounded-2xl overflow-hidden aspect-[16/7] border border-gray-300 bg-agri-950 flex items-center justify-center p-6 text-center text-white">
               <img
-                src={heroImageUrl || 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1800&q=80'}
+                src={resolveImageUrl(heroImageUrl, '/sri-anjaneya-shop.png')}
                 alt="Shop Background Preview"
                 className="absolute inset-0 w-full h-full object-cover object-center"
               />
@@ -498,10 +519,10 @@ export const AdminSettingsPage: React.FC = () => {
                   Live Hero Preview
                 </span>
                 <h4 className="text-lg sm:text-2xl font-black text-white leading-tight">
-                  {heroTitle || 'Quality Seeds, Fertilizers & Pesticides for Prosperous Farming'}
+                  {heroTitle || 'Quality Seeds, Fertilizers & Pesticides'}
                 </h4>
                 <p className="text-xs text-agri-100 line-clamp-2">
-                  {heroSubtitle || 'Serving hardworking farmers across Telangana with certified crop protection, fertilizers, and high-yield seeds.'}
+                  {heroSubtitle || 'Retail store providing fertilizers, pesticides, seeds, and micronutrients with in-store counter pickup.'}
                 </p>
               </div>
             </div>
@@ -526,19 +547,17 @@ export const AdminSettingsPage: React.FC = () => {
                 <span>{isUploading ? 'Uploading Photograph...' : heroImageUrl ? 'Replace Shop Photo' : 'Choose Shop Photo'}</span>
               </button>
 
-              {heroImageUrl && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setHeroImageUrl('');
-                    showToast('Removed custom shop image. Temporary agricultural placeholder active.', 'info');
-                  }}
-                  className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-red-300 text-red-700 hover:bg-red-50 text-xs font-bold transition"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Remove (Use Placeholder)</span>
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setHeroImageUrl('/sri-anjaneya-shop.png');
+                  showToast('Restored official storefront background photo.', 'info');
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 text-xs font-bold transition"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Restore Default Store Photo</span>
+              </button>
             </div>
             <p className="text-[11px] text-gray-500">
               Upload a clear photo of the store front from your smartphone gallery or computer. The image is saved to cloud storage and rendered with a high-contrast green overlay.
@@ -773,8 +792,8 @@ export const AdminSettingsPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Test Button */}
-            {(googleMapsUrl || directionsUrl) && (
+            {/* Test Button or Unconfigured Setup Guidance */}
+            {googleMapsUrl || directionsUrl ? (
               <div className="pt-1">
                 <a
                   href={directionsUrl || googleMapsUrl}
@@ -785,6 +804,16 @@ export const AdminSettingsPage: React.FC = () => {
                   <Navigation className="w-3.5 h-3.5 text-agri-700" />
                   <span>Test Opening Google Maps Link</span>
                 </a>
+              </div>
+            ) : (
+              <div className="p-4 bg-gray-50 border border-dashed border-gray-300 rounded-2xl text-xs text-gray-600 space-y-1">
+                <div className="flex items-center gap-2 font-bold text-gray-800">
+                  <MapPin className="w-4 h-4 text-agri-700" />
+                  <span>Google Maps Link Not Yet Configured</span>
+                </div>
+                <p>
+                  When left blank, the public website displays your formatted address cleanly without showing an incorrect or broken map. You can paste your Google Maps link or directions URL here anytime.
+                </p>
               </div>
             )}
           </div>

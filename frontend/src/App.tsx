@@ -135,6 +135,9 @@ export const App: React.FC = () => {
                   <Route path="products" element={<AdminProductsPage />} />
                   <Route path="categories" element={<AdminCategoriesPage />} />
                   <Route path="orders" element={<AdminOrdersPage />} />
+                  <Route path="profile" element={<AdminSettingsPage defaultTab="branding" />} />
+                  <Route path="location" element={<AdminSettingsPage defaultTab="address" />} />
+                  <Route path="appearance" element={<AdminSettingsPage defaultTab="homepage" />} />
                   <Route path="settings" element={<AdminSettingsPage />} />
                 </Route>
 

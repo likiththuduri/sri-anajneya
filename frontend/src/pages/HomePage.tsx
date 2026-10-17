@@ -7,6 +7,7 @@ import { sectionsApi } from '../api/sections';
 import { useSettings } from '../context/SettingsContext';
 import { ProductCard } from '../components/common/ProductCard';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { resolveImageUrl, DEFAULT_HERO_FALLBACK } from '../utils/imageUrl';
 
 export const HomePage: React.FC = () => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -53,14 +54,12 @@ export const HomePage: React.FC = () => {
     return sec ? sec.enabled : true;
   };
 
-  const cleanPhone = (settings.phone || '919000000000').replace(/[^0-9]/g, '');
-  const cleanWhatsApp = (settings.whatsapp || '919000000000').replace(/[^0-9]/g, '');
+  const cleanPhone = (settings.phone || '7095891270').replace(/[^0-9]/g, '');
+  const cleanWhatsApp = (settings.whatsapp || '7095891270').replace(/[^0-9]/g, '');
   const directionsUrl = settings.directionsUrl || settings.googleMapsUrl || `https://maps.google.com/?q=${encodeURIComponent((settings.shopName || 'SRI ANJANEYA FERTILIZERS') + ' ' + (settings.address || 'Telangana'))}`;
 
   const hasCustomHeroImage = Boolean(settings.heroImageUrl && settings.heroImageUrl.trim() !== '');
-  const heroImageSrc = hasCustomHeroImage
-    ? settings.heroImageUrl
-    : 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1800&q=80';
+  const heroImageSrc = resolveImageUrl(settings.heroImageUrl, DEFAULT_HERO_FALLBACK);
 
   const categories = [
     {
@@ -120,8 +119,8 @@ export const HomePage: React.FC = () => {
           <div className="relative z-10 max-w-7xl mx-auto flex flex-col items-center text-center w-full">
             {/* Store Identification Badge */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-agri-800/80 border border-agri-500/40 text-agri-200 text-xs sm:text-sm font-semibold mb-6 backdrop-blur-md">
-              <span className="w-2 h-2 rounded-full bg-agri-400 animate-pulse" />
-              <span>Telangana Govt. Approved Agricultural Supply Center</span>
+              <span className="w-2 h-2 rounded-full bg-agri-400" />
+              <span>Agricultural Fertilizers, Pesticides &amp; Seeds</span>
             </div>
 
             {/* Exact Official Shop Branding */}
@@ -131,15 +130,8 @@ export const HomePage: React.FC = () => {
 
             <p className="mt-6 text-base sm:text-xl text-agri-100 max-w-2xl leading-relaxed">
               {settings.heroSubtitle ||
-                'Authorized supplier of genuine fertilizers, certified hybrid seeds, and proven crop protection chemicals. Order online or book in advance for in-store pickup.'}
+                'Retailer of fertilizers, pesticides, seeds, and micronutrients. Order online or book in advance for in-store counter pickup.'}
             </p>
-
-            {/* Indicator badge if photo is placeholder */}
-            {!hasCustomHeroImage && (
-              <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-black/40 border border-white/20 text-[11px] text-gray-200 backdrop-blur-sm">
-                <span>📷 Note: Temporary agricultural photo. Administrator can upload the actual shop storefront photo from Admin Settings.</span>
-              </div>
-            )}
 
             {/* Action CTAs */}
             <div className="mt-8 flex flex-wrap justify-center items-center gap-4">
@@ -187,19 +179,19 @@ export const HomePage: React.FC = () => {
               <div className="mt-12 pt-8 border-t border-agri-800/80 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-left w-full">
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="w-5 h-5 text-agri-400 shrink-0" />
-                  <span className="text-xs sm:text-sm font-medium text-agri-100">100% Genuine Certified Stocks</span>
+                  <span className="text-xs sm:text-sm font-medium text-agri-100">Quality Agricultural Inputs</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="w-5 h-5 text-agri-400 shrink-0" />
-                  <span className="text-xs sm:text-sm font-medium text-agri-100">Transparent Fair Prices (₹)</span>
+                  <span className="text-xs sm:text-sm font-medium text-agri-100">Prices in Indian Rupees (₹)</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="w-5 h-5 text-agri-400 shrink-0" />
-                  <span className="text-xs sm:text-sm font-medium text-agri-100">Same-Day Local Store Pickup</span>
+                  <span className="text-xs sm:text-sm font-medium text-agri-100">In-Store Counter Pickup</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="w-5 h-5 text-agri-400 shrink-0" />
-                  <span className="text-xs sm:text-sm font-medium text-agri-100">Experienced Agronomy Advice</span>
+                  <span className="text-xs sm:text-sm font-medium text-agri-100">Store Counter Assistance</span>
                 </div>
               </div>
             )}
@@ -292,7 +284,7 @@ export const HomePage: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-agri-700 bg-agri-50 px-3 py-1 rounded-full border border-agri-200">
-                Popular with Telangana Farmers
+                Featured Products
               </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-2">
                 Featured Agricultural Inputs
@@ -333,7 +325,7 @@ export const HomePage: React.FC = () => {
             <div className="space-y-4 max-w-2xl text-center lg:text-left">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-agri-200 text-xs font-semibold">
                 <MapPin className="w-3.5 h-3.5" />
-                <span>Easy Local Counter Pickup in {settings.state || 'Telangana'}</span>
+                <span>In-Store Counter Pickup</span>
               </div>
               <h3 className="text-2xl sm:text-3xl font-extrabold text-white">
                 How In-Store Counter Pickup Works

@@ -5,9 +5,10 @@ import { Product } from '../types';
 import { productsApi } from '../api/products';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
-import { useSettings } from '../context/SettingsContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { BookingModal } from '../components/common/BookingModal';
+import { useSettings } from '../context/SettingsContext';
+import { resolveImageUrl, DEFAULT_PRODUCT_FALLBACK } from '../utils/imageUrl';
 
 export const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +16,7 @@ export const ProductDetailPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [imageError, setImageError] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
@@ -69,9 +71,9 @@ export const ProductDetailPage: React.FC = () => {
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
   };
 
-  const imageSrc = imageError || !product.imageUrl
-    ? 'https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&w=800&q=80'
-    : product.imageUrl;
+  // Image source resolved with backend base URL and fallback
+  const resolvedSrc = resolveImageUrl(product.imageUrl, DEFAULT_PRODUCT_FALLBACK);
+  const imageSrc = imageError ? DEFAULT_PRODUCT_FALLBACK : resolvedSrc;
 
   return (
     <>
@@ -99,11 +101,22 @@ export const ProductDetailPage: React.FC = () => {
             {/* Image Column */}
             <div className="lg:col-span-5 space-y-4">
               <div className="relative rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 aspect-square flex items-center justify-center">
+                {isImageLoading && !imageError && (
+                  <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
+                    <span className="text-xs text-gray-400 font-semibold">Loading product image...</span>
+                  </div>
+                )}
                 <img
                   src={imageSrc}
                   alt={product.name}
-                  onError={() => setImageError(true)}
-                  className="w-full h-full object-cover object-center"
+                  onLoad={() => setIsImageLoading(false)}
+                  onError={() => {
+                    setIsImageLoading(false);
+                    setImageError(true);
+                  }}
+                  className={`w-full h-full object-cover object-center ${
+                    isImageLoading ? 'opacity-0' : 'opacity-100'
+                  }`}
                 />
 
                 {/* Badges */}
@@ -143,7 +156,7 @@ export const ProductDetailPage: React.FC = () => {
                   <span>Physical Store Pickup Counter</span>
                 </div>
                 <p className="leading-relaxed">
-                  Reserve online or via advance booking, then collect directly at our registered store in Telangana. Genuine batch-numbered products with invoice.
+                  Reserve online or via advance booking, then collect directly at our store counter. Genuine products with store invoice.
                 </p>
               </div>
             </div>
@@ -162,7 +175,7 @@ export const ProductDetailPage: React.FC = () => {
                 </h1>
 
                 <div className="text-xs text-gray-500">
-                  Manufactured by <strong className="text-gray-800">{product.brand}</strong> • Store counter pickup in Telangana
+                  Manufactured by <strong className="text-gray-800">{product.brand}</strong> • Store counter pickup
                 </div>
 
                 {/* Price Banner */}
@@ -179,7 +192,7 @@ export const ProductDetailPage: React.FC = () => {
                 <div className="space-y-2 pt-2">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">Product Overview &amp; Usage</h3>
                   <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                    {product.description || 'Certified agricultural input for optimal crop development, disease control, and maximized harvest yield.'}
+                    {product.description || 'Agricultural input for crop development and protection.'}
                   </p>
                 </div>
 

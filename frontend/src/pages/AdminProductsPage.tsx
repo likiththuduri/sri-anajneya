@@ -5,6 +5,7 @@ import { productsApi } from '../api/products';
 import { categoriesApi } from '../api/categories';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { useToast } from '../context/ToastContext';
+import { resolveImageUrl, DEFAULT_PRODUCT_FALLBACK } from '../utils/imageUrl';
 
 export const AdminProductsPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -104,14 +105,14 @@ export const AdminProductsPage: React.FC = () => {
     setModalError(null);
 
     try {
-      showToast('Uploading image to Cloudinary CDN...', 'info');
+      showToast('Uploading image from device...', 'info');
       const res = await productsApi.uploadProductImage(file);
       if (res.url) {
         setFormImageUrl(res.url);
-        showToast('Image uploaded to Cloudinary successfully!', 'success');
+        showToast('Image uploaded and saved successfully!', 'success');
       }
     } catch (err: any) {
-      const msg = err?.message || 'Failed to upload image to Cloudinary.';
+      const msg = err?.message || 'Failed to upload image.';
       setModalError(msg);
       showToast(msg, 'error');
     } finally {
@@ -187,11 +188,11 @@ export const AdminProductsPage: React.FC = () => {
     if (!file || !prodId) return;
 
     try {
-      showToast('Uploading new picture to Cloudinary...', 'info');
+      showToast('Uploading new picture from device...', 'info');
       const uploadRes = await productsApi.uploadProductImage(file);
 
       if (!uploadRes.url) {
-        throw new Error('Cloudinary did not return an image URL.');
+        throw new Error('Image upload did not return an image URL.');
       }
 
       // Save directly into MySQL database
@@ -278,7 +279,7 @@ export const AdminProductsPage: React.FC = () => {
             Inventory &amp; Product Management
           </h1>
           <p className="text-xs text-gray-500 mt-1">
-            Centrally stored in MySQL. Image changes are stored permanently in Cloudinary and immediately synchronized to all devices.
+            Centrally stored in MySQL. Product records and uploaded images are permanently stored and immediately synchronized across all devices.
           </p>
         </div>
 
@@ -355,13 +356,13 @@ export const AdminProductsPage: React.FC = () => {
                       <td className="py-3 px-4">
                         <div className="relative group w-14 h-14 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 shrink-0">
                           <img
-                            src={p.imageUrl || 'https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&w=200&q=80'}
+                            src={resolveImageUrl(p.imageUrl, DEFAULT_PRODUCT_FALLBACK)}
                             alt={p.name}
                             className="w-full h-full object-cover"
                           />
                           <button
                             onClick={() => triggerRowImageUpload(p.id)}
-                            title="Replace image on Cloudinary & sync cross-device"
+                            title="Replace product image from Gallery/Files"
                             className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[9px] font-bold"
                           >
                             <Upload className="w-4 h-4 mb-0.5" />
@@ -614,7 +615,7 @@ export const AdminProductsPage: React.FC = () => {
                       onChange={(e) => setFormActive(e.target.checked)}
                       className="w-4 h-4 text-agri-600 rounded"
                     />
-                    <span>Active (Show to Farmers)</span>
+                    <span>Active (Visible to Customers)</span>
                   </label>
 
                   <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-gray-700">
@@ -656,16 +657,16 @@ export const AdminProductsPage: React.FC = () => {
                 )}
               </div>
 
-              {/* Cloudinary Image Upload Section */}
+              {/* Image Upload Section */}
               <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200 space-y-3">
                 <label className="block text-xs font-bold text-gray-900">
-                  Product Picture (Cloudinary Persistent Storage)
+                  Product Picture (Persistent Storage)
                 </label>
                 
                 <div className="flex flex-col sm:flex-row items-center gap-4">
                   {formImageUrl && (
                     <img
-                      src={formImageUrl}
+                      src={resolveImageUrl(formImageUrl, DEFAULT_PRODUCT_FALLBACK)}
                       alt="Preview"
                       className="w-20 h-20 rounded-xl object-cover border border-gray-200 bg-white shrink-0"
                     />

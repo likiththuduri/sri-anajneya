@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate, Navigate } from 'react-router-dom';
-import { LayoutDashboard, Package, Tag, ShoppingBag, Settings, LogOut, ExternalLink, Menu, X, Shield, CalendarCheck } from 'lucide-react';
+import { 
+  LayoutDashboard, Package, Tag, ShoppingBag, Settings, LogOut, 
+  ExternalLink, Menu, X, Shield, CalendarCheck, Store, MapPin, Image as ImageIcon 
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 
@@ -29,12 +32,15 @@ export const AdminLayout: React.FC = () => {
     { name: 'Products & Stock', path: '/admin/products', icon: Package },
     { name: 'Categories', path: '/admin/categories', icon: Tag },
     { name: 'Customer Orders', path: '/admin/orders', icon: ShoppingBag },
-    { name: 'Shop Settings', path: '/admin/settings', icon: Settings },
+    { name: 'Shop Profile', path: '/admin/profile', icon: Store },
+    { name: 'Shop Location', path: '/admin/location', icon: MapPin },
+    { name: 'Homepage Appearance', path: '/admin/appearance', icon: ImageIcon },
+    { name: 'Website Settings', path: '/admin/settings', icon: Settings },
   ];
 
   const isActive = (path: string) => {
     if (path === '/admin' && location.pathname === '/admin') return true;
-    if (path !== '/admin' && location.pathname.startsWith(path)) return true;
+    if (path !== '/admin' && location.pathname === path) return true;
     return false;
   };
 

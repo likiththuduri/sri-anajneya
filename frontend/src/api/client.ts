@@ -1,4 +1,4 @@
-const getApiBaseUrl = (): string => {
+export const getApiBaseUrl = (): string => {
   const envUrl = (import.meta.env.VITE_API_BASE_URL || '').trim();
   if (envUrl) {
     return envUrl.replace(/\/$/, '');
@@ -16,7 +16,7 @@ const getApiBaseUrl = (): string => {
   return '';
 };
 
-const API_BASE_URL = getApiBaseUrl();
+export const API_BASE_URL = getApiBaseUrl();
 
 export class ApiError extends Error {
   status: number;

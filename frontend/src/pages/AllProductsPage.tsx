@@ -72,13 +72,13 @@ export const AllProductsPage: React.FC = () => {
       {/* Header */}
       <div className="border-b border-gray-200 pb-6">
         <span className="text-xs font-bold uppercase tracking-wider text-agri-700">
-          SRI ANJANEYA Agricultural Catalog
+          SRI ANJANEYA FERTILIZERS, PESTICIDES &amp; SEEDS
         </span>
         <h1 className="text-2xl sm:text-4xl font-extrabold text-gray-900 mt-1">
-          All Products &amp; Farm Inputs
+          Products Catalog
         </h1>
         <p className="text-sm text-gray-600 mt-2">
-          Browse genuine Fertilizers, certified Hybrid Seeds, Pesticides, and Micronutrients available for local pickup.
+          Browse fertilizers, seeds, crop protection products, and micronutrients available for in-store pickup.
         </p>
       </div>
 

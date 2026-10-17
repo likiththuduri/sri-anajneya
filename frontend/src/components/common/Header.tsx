@@ -4,6 +4,7 @@ import { ShoppingCart, Menu, X, Shield, Phone, MessageSquare } from 'lucide-reac
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
+import { resolveImageUrl } from '../../utils/imageUrl';
 
 export const Header: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -28,8 +29,8 @@ export const Header: React.FC = () => {
     return false;
   };
 
-  const cleanPhone = (settings.phone || '919000000000').replace(/[^0-9]/g, '');
-  const cleanWhatsApp = (settings.whatsapp || '919000000000').replace(/[^0-9]/g, '');
+  const cleanPhone = (settings.phone || '7095891270').replace(/[^0-9]/g, '');
+  const cleanWhatsApp = (settings.whatsapp || '7095891270').replace(/[^0-9]/g, '');
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm transition-all">
@@ -38,11 +39,8 @@ export const Header: React.FC = () => {
         <div className="bg-agri-950 text-white text-xs py-2 px-4 border-b border-agri-900">
           <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-agri-800 text-agri-200 text-[10px] font-bold uppercase tracking-wider">
-                Telangana Verified
-              </span>
               <span className="text-agri-100 font-medium text-xs">
-                {settings.announcementText || 'Certified Fertilizers, Pesticides & Seeds • In-Store Pickup in Telangana'}
+                {settings.announcementText || 'Fertilizers, Pesticides & Seeds • In-Store Pickup Available'}
               </span>
             </div>
 
@@ -86,13 +84,13 @@ export const Header: React.FC = () => {
         <Link to="/" className="flex items-center gap-3.5 group">
           <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-agri-600 to-agri-800 flex items-center justify-center p-1.5 shadow-md group-hover:scale-105 transition-transform duration-200 overflow-hidden">
             <img
-              src={settings.logoUrl || '/logo.svg'}
+              src={resolveImageUrl(settings.logoUrl, '/anjaneya-logo.jpeg')}
               alt={settings.shopName || 'Sri Anjaneya Logo'}
               className="w-full h-full object-contain"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                if (target.src !== window.location.origin + '/logo.svg') {
-                  target.src = '/logo.svg';
+                if (target.src !== window.location.origin + '/anjaneya-logo.jpeg') {
+                  target.src = '/anjaneya-logo.jpeg';
                 }
               }}
             />
@@ -102,7 +100,7 @@ export const Header: React.FC = () => {
               {settings.shopName || 'SRI ANJANEYA FERTILIZERS, PESTICIDES & SEEDS'}
             </span>
             <span className="text-[11px] font-semibold text-agri-700 uppercase tracking-wider">
-              Agricultural Inputs &amp; Store Pickup • {settings.state || 'Telangana'}, India
+              Fertilizers, Pesticides &amp; Seeds • In-Store Pickup
             </span>
           </div>
         </Link>

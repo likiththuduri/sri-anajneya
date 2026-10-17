@@ -75,6 +75,11 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/bookings").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/bookings/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/sections/**").permitAll()
+                // Public Persistent Images & Static Uploads
+                .requestMatchers(HttpMethod.GET, "/api/images/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
+                // Public Payments Integration
+                .requestMatchers("/api/payments/**").permitAll()
                 // H2 Console for dev inspection
                 .requestMatchers("/h2-console/**").permitAll()
                 // Admin Protected APIs

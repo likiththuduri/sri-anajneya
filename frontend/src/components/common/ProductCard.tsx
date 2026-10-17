@@ -5,6 +5,7 @@ import { Product } from '../../types';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
 import { useSettings } from '../../context/SettingsContext';
+import { resolveImageUrl, DEFAULT_PRODUCT_FALLBACK } from '../../utils/imageUrl';
 import { BookingModal } from './BookingModal';
 
 interface ProductCardProps {
@@ -17,6 +18,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { settings } = useSettings();
   const [isAdding, setIsAdding] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(true);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
   const isOutOfStock = product.stock <= 0;
@@ -44,21 +46,31 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(text)}`;
   };
 
-  // Image source with fallback
-  const imageSrc = imageError || !product.imageUrl
-    ? 'https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&w=600&q=80'
-    : product.imageUrl;
+  // Image source resolved with backend base URL and fallback
+  const resolvedSrc = resolveImageUrl(product.imageUrl, DEFAULT_PRODUCT_FALLBACK);
+  const imageSrc = imageError ? DEFAULT_PRODUCT_FALLBACK : resolvedSrc;
 
   return (
     <>
       <div className="group bg-white rounded-2xl border border-gray-200/90 hover:border-agri-400 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col justify-between">
         {/* Product Image Area */}
         <Link to={`/products/${product.id}`} className="relative block bg-gray-100 overflow-hidden aspect-[4/3]">
+          {isImageLoading && !imageError && (
+            <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
+              <span className="text-[10px] text-gray-400 font-semibold">Loading...</span>
+            </div>
+          )}
           <img
             src={imageSrc}
             alt={product.name}
-            onError={() => setImageError(true)}
-            className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+            onLoad={() => setIsImageLoading(false)}
+            onError={() => {
+              setIsImageLoading(false);
+              setImageError(true);
+            }}
+            className={`w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300 ${
+              isImageLoading ? 'opacity-0' : 'opacity-100'
+            }`}
             loading="lazy"
           />
 

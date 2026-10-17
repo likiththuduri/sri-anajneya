@@ -5,8 +5,8 @@ import { useSettings } from '../context/SettingsContext';
 export const ContactPage: React.FC = () => {
   const { settings } = useSettings();
 
-  const cleanPhone = (settings.phone || '919000000000').replace(/[^0-9]/g, '');
-  const cleanWhatsApp = (settings.whatsapp || '919000000000').replace(/[^0-9]/g, '');
+  const cleanPhone = (settings.phone || '7095891270').replace(/[^0-9]/g, '');
+  const cleanWhatsApp = (settings.whatsapp || '7095891270').replace(/[^0-9]/g, '');
   const directionsUrl = settings.directionsUrl || settings.googleMapsUrl || `https://maps.google.com/?q=${encodeURIComponent((settings.shopName || 'SRI ANJANEYA FERTILIZERS') + ' ' + (settings.address || 'Telangana'))}`;
 
   return (
@@ -20,7 +20,7 @@ export const ContactPage: React.FC = () => {
           Contact &amp; Store Visit Information
         </h1>
         <p className="text-sm text-gray-600 leading-relaxed">
-          Visit <strong>{settings.shopName || 'SRI ANJANEYA FERTILIZERS, PESTICIDES & SEEDS'}</strong> for genuine agricultural products, certified seeds, crop protection recommendations, and instant counter pickup.
+          Visit <strong>{settings.shopName || 'SRI ANJANEYA FERTILIZERS, PESTICIDES & SEEDS'}</strong> for fertilizers, seeds, crop protection products, and in-store pickup.
         </p>
       </div>
 
@@ -99,10 +99,10 @@ export const ContactPage: React.FC = () => {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h3 className="font-extrabold text-gray-900 text-lg">
-                Find Our Store in {settings.state || 'Telangana'}
+                Find Our Store
               </h3>
               <p className="text-xs text-gray-500 mt-1">
-                Conveniently located for tractor, auto-trolley, and farm transport loading.
+                Conveniently located with parking and transport loading access.
               </p>
             </div>
             <a
@@ -148,13 +148,13 @@ export const ContactPage: React.FC = () => {
             <div className="p-4 rounded-xl border border-gray-100 bg-gray-50">
               <span className="font-bold text-xs text-gray-900 block mb-1">Vehicle Loading Facility</span>
               <p className="text-xs text-gray-500">
-                Spacious front parking area suitable for auto-trolleys, tractors, and pickups to load fertilizer sacks.
+                Front parking area suitable for transport and vehicles to load product bags and supplies.
               </p>
             </div>
             <div className="p-4 rounded-xl border border-gray-100 bg-gray-50">
-              <span className="font-bold text-xs text-gray-900 block mb-1">Agronomy Advisory</span>
+              <span className="font-bold text-xs text-gray-900 block mb-1">Product Guidance</span>
               <p className="text-xs text-gray-500">
-                Bring crop leaf samples for on-the-spot pest diagnosis and dosage advice by certified staff.
+                Assistance with product selection, pack sizes, and application guidelines.
               </p>
             </div>
           </div>

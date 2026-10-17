@@ -1,22 +1,58 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Trash2, ShoppingBag, ArrowRight, CheckCircle2, MessageSquare, AlertCircle, MapPin, Store, User, Phone, FileText } from 'lucide-react';
+import { 
+  Trash2, ShoppingBag, ArrowRight, CheckCircle2, MessageSquare, 
+  AlertCircle, MapPin, Store, User, Phone, FileText, CreditCard, ShieldCheck 
+} from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
+import { useSettings } from '../context/SettingsContext';
 import { ordersApi } from '../api/orders';
+import { paymentsApi, PaymentConfig } from '../api/payments';
 import { Order } from '../types';
+import { resolveImageUrl, DEFAULT_PRODUCT_FALLBACK } from '../utils/imageUrl';
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 export const CartPage: React.FC = () => {
   const { cart, updateQuantity, removeFromCart, clearCart, totalPrice, totalItems } = useCart();
   const { showToast } = useToast();
+  const { settings } = useSettings();
 
   const [customerName, setCustomerName] = useState('');
   const [customerMobile, setCustomerMobile] = useState('');
   const [customerVillage, setCustomerVillage] = useState('');
   const [customerNotes, setCustomerNotes] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'COUNTER_PICKUP' | 'ONLINE'>('COUNTER_PICKUP');
+  const [paymentConfig, setPaymentConfig] = useState<PaymentConfig | null>(null);
+  const [isPaymentVerified, setIsPaymentVerified] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    paymentsApi.getConfig()
+      .then(setPaymentConfig)
+      .catch((err) => console.warn('Could not load payment gateway config:', err));
+  }, []);
+
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +80,7 @@ export const CartPage: React.FC = () => {
       const orderPayload = {
         customerName: customerName.trim(),
         customerMobile: cleanMobile,
-        customerVillage: customerVillage.trim() || 'Telangana',
+        customerVillage: customerVillage.trim() || settings.state || 'Telangana',
         customerNotes: customerNotes.trim(),
         items: cart.map((item) => ({
           productId: item.product.id,
@@ -55,7 +91,78 @@ export const CartPage: React.FC = () => {
       // 1. Save in MySQL database via Spring Boot backend
       const savedOrder = await ordersApi.createOrder(orderPayload);
 
-      // 2. Clear customer shopping cart
+      // If Online Payment is chosen
+      if (paymentMethod === 'ONLINE') {
+        if (!paymentConfig?.onlinePaymentEnabled) {
+          showToast('Online payment gateway is in test/setup mode. Please choose Pay at Store Counter.', 'info');
+          setIsSubmitting(false);
+          return;
+        }
+
+        const scriptLoaded = await loadRazorpayScript();
+        if (!scriptLoaded) {
+          throw new Error('Failed to load secure payment gateway. Please check your internet connection.');
+        }
+
+        // Initiate payment on backend
+        const initRes = await paymentsApi.initiatePayment({
+          orderNumber: savedOrder.orderNumber,
+          amount: totalPrice,
+          customerName: customerName.trim(),
+          customerMobile: cleanMobile,
+        });
+
+        // Open Razorpay Checkout Modal
+        const options = {
+          key: initRes.razorpayKeyId,
+          amount: Math.round(Number(initRes.amount) * 100),
+          currency: initRes.currency || 'INR',
+          name: settings.shopName || 'SRI ANJANEYA FERTILIZERS, PESTICIDES & SEEDS',
+          description: `Order ${savedOrder.orderNumber}`,
+          image: resolveImageUrl(settings.logoUrl, '/anjaneya-logo.jpeg'),
+          order_id: initRes.razorpayOrderId,
+          prefill: {
+            name: customerName.trim(),
+            contact: cleanMobile,
+          },
+          theme: {
+            color: '#15803d',
+          },
+          handler: async function (response: any) {
+            try {
+              const verifyRes = await paymentsApi.verifyPayment({
+                paymentReference: initRes.paymentReference,
+                razorpayOrderId: response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+              });
+
+              if (verifyRes.success) {
+                setIsPaymentVerified(true);
+                clearCart();
+                setCompletedOrder(savedOrder);
+                showToast(`Payment verified! Order ${savedOrder.orderNumber} confirmed!`, 'success');
+              }
+            } catch (err: any) {
+              showToast(err?.message || 'Payment verification failed', 'error');
+            }
+          },
+          modal: {
+            ondismiss: function () {
+              clearCart();
+              setCompletedOrder(savedOrder);
+              showToast('Online payment cancelled. You can settle payment at the shop counter upon pickup.', 'info');
+            },
+          },
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.open();
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 2. Counter Pickup: Clear cart & show confirmation
       clearCart();
       setCompletedOrder(savedOrder);
       showToast(`Order ${savedOrder.orderNumber} placed successfully!`, 'success');
@@ -109,6 +216,19 @@ export const CartPage: React.FC = () => {
             </div>
 
             <div className="flex justify-between items-center text-xs">
+              <span className="text-gray-500 font-medium">Payment Status:</span>
+              {isPaymentVerified ? (
+                <span className="font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded border border-green-300">
+                  ✓ Paid Online (Verified)
+                </span>
+              ) : (
+                <span className="font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded border border-amber-300">
+                  Pay at Counter on Pickup (Cash/UPI)
+                </span>
+              )}
+            </div>
+
+            <div className="flex justify-between items-center text-xs">
               <span className="text-gray-500 font-medium">Collection Mode:</span>
               <span className="font-bold text-agri-700 bg-agri-100 px-2 py-0.5 rounded">Store Pickup</span>
             </div>
@@ -126,7 +246,7 @@ export const CartPage: React.FC = () => {
             </div>
 
             <div className="border-t border-gray-200 pt-3 flex justify-between items-baseline font-extrabold">
-              <span className="text-sm text-gray-800">Total Amount Payable:</span>
+              <span className="text-sm text-gray-800">Total Amount:</span>
               <span className="text-xl text-agri-950">₹{Number(completedOrder.totalAmount).toFixed(2)}</span>
             </div>
           </div>
@@ -184,13 +304,13 @@ export const CartPage: React.FC = () => {
       {/* Title */}
       <div className="border-b border-gray-200 pb-4">
         <span className="text-xs font-bold uppercase tracking-wider text-agri-700">
-          SRI ANJANEYA FERTILIZERS, PESTICIDES &amp; SEEDS
+          {settings.shopName || 'SRI ANJANEYA FERTILIZERS, PESTICIDES & SEEDS'}
         </span>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mt-1">
           Your Shopping Cart &amp; Local Pickup Booking
         </h1>
         <p className="text-xs text-gray-500 mt-1">
-          Review your items and enter your details to generate your official store pickup order slip.
+          Review your items and choose your payment option to generate your official store pickup order slip.
         </p>
       </div>
 
@@ -212,7 +332,7 @@ export const CartPage: React.FC = () => {
               <div key={item.product.id} className="py-4 flex gap-4 items-center justify-between">
                 <div className="flex items-center gap-3 min-w-0">
                   <img
-                    src={item.product.imageUrl || 'https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?auto=format&fit=crop&w=200&q=80'}
+                    src={resolveImageUrl(item.product.imageUrl, DEFAULT_PRODUCT_FALLBACK)}
                     alt={item.product.name}
                     className="w-16 h-16 rounded-xl object-cover bg-gray-100 shrink-0 border border-gray-100"
                   />
@@ -274,17 +394,17 @@ export const CartPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Local Pickup Booking Form */}
+        {/* Local Pickup Booking & Payment Form */}
         <div className="lg:col-span-5 bg-white rounded-2xl border border-gray-200 p-6 space-y-6 shadow-sm">
           <div>
             <span className="text-xs font-bold text-agri-700 uppercase tracking-wider">
               Step 2 of 2
             </span>
             <h3 className="text-lg font-extrabold text-gray-900 mt-0.5">
-              Customer &amp; Pickup Details
+              Customer &amp; Payment Details
             </h3>
             <p className="text-xs text-gray-500 mt-1">
-              No online payment required. Pay by Cash or UPI when collecting at our store counter.
+              Select your payment preference and submit to confirm your order.
             </p>
           </div>
 
@@ -333,13 +453,13 @@ export const CartPage: React.FC = () => {
 
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1">
-                Village / Town in Telangana
+                Village / Locality
               </label>
               <div className="relative">
                 <MapPin className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="e.g. Nalgonda, Suryapet, Khammam"
+                  placeholder="e.g. Suryapet, Nalgonda, Choutuppal"
                   value={customerVillage}
                   onChange={(e) => setCustomerVillage(e.target.value)}
                   className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-300 text-xs sm:text-sm focus:ring-2 focus:ring-agri-500 focus:outline-none"
@@ -349,13 +469,13 @@ export const CartPage: React.FC = () => {
 
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1">
-                Optional Order Notes (e.g. pickup time, crop type)
+                Optional Order Notes (e.g. pickup time)
               </label>
               <div className="relative">
                 <FileText className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
                 <textarea
                   rows={2}
-                  placeholder="Add any specific requests or questions..."
+                  placeholder="Add any specific requests or pickup instructions..."
                   value={customerNotes}
                   onChange={(e) => setCustomerNotes(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 rounded-xl border border-gray-300 text-xs sm:text-sm focus:ring-2 focus:ring-agri-500 focus:outline-none resize-none"
@@ -363,11 +483,80 @@ export const CartPage: React.FC = () => {
               </div>
             </div>
 
+            {/* Payment Options Selection */}
+            <div className="space-y-2 pt-1">
+              <label className="block text-xs font-bold text-gray-800">
+                Payment Option:
+              </label>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {/* Option 1: Store Counter Pickup (Cash / UPI) */}
+                <div
+                  onClick={() => setPaymentMethod('COUNTER_PICKUP')}
+                  className={`p-3 rounded-xl border cursor-pointer transition flex items-start gap-2.5 ${
+                    paymentMethod === 'COUNTER_PICKUP'
+                      ? 'border-agri-600 bg-agri-50/80 ring-1 ring-agri-500'
+                      : 'border-gray-200 hover:border-gray-300 bg-white'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    checked={paymentMethod === 'COUNTER_PICKUP'}
+                    onChange={() => setPaymentMethod('COUNTER_PICKUP')}
+                    className="mt-1 text-agri-600 focus:ring-agri-500"
+                  />
+                  <div>
+                    <span className="font-bold text-xs text-gray-900 block">Pay at Store Counter</span>
+                    <span className="text-[11px] text-gray-500 block leading-tight mt-0.5">
+                      Cash or UPI when collecting products at counter.
+                    </span>
+                  </div>
+                </div>
+
+                {/* Option 2: Online Payment (Razorpay) */}
+                <div
+                  onClick={() => setPaymentMethod('ONLINE')}
+                  className={`p-3 rounded-xl border cursor-pointer transition flex items-start gap-2.5 ${
+                    paymentMethod === 'ONLINE'
+                      ? 'border-agri-600 bg-agri-50/80 ring-1 ring-agri-500'
+                      : 'border-gray-200 hover:border-gray-300 bg-white'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    checked={paymentMethod === 'ONLINE'}
+                    onChange={() => setPaymentMethod('ONLINE')}
+                    className="mt-1 text-agri-600 focus:ring-agri-500"
+                  />
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-xs text-gray-900">Pay Online</span>
+                      <CreditCard className="w-3.5 h-3.5 text-agri-700" />
+                    </div>
+                    <span className="text-[11px] text-gray-500 block leading-tight mt-0.5">
+                      Instant UPI, Cards &amp; NetBanking via Razorpay.
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {paymentMethod === 'ONLINE' && !paymentConfig?.onlinePaymentEnabled && (
+                <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-[11px] text-amber-900 flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0" />
+                  <span>
+                    Payment gateway is in test mode. Please use <strong>Pay at Store Counter</strong>.
+                  </span>
+                </div>
+              )}
+            </div>
+
             {/* Store Pickup Banner */}
             <div className="p-3 bg-agri-50 border border-agri-200 rounded-xl text-[11px] text-agri-900 flex items-start gap-2">
               <Store className="w-4 h-4 text-agri-700 shrink-0 mt-0.5" />
               <span>
-                <strong>Store Pickup Location:</strong> SRI ANJANEYA FERTILIZERS, PESTICIDES &amp; SEEDS, Main Road, Telangana, India.
+                <strong>Store Pickup Location:</strong> {settings.shopName || 'SRI ANJANEYA FERTILIZERS, PESTICIDES & SEEDS'}, {settings.address || 'Main Road, Telangana, India'}.
               </span>
             </div>
 
@@ -378,7 +567,12 @@ export const CartPage: React.FC = () => {
               className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-agri-600 to-agri-800 hover:from-agri-700 hover:to-agri-900 text-white font-extrabold py-3.5 px-6 rounded-xl shadow-lg transition active:scale-95 disabled:opacity-50"
             >
               {isSubmitting ? (
-                <span>Saving Order in Database...</span>
+                <span>Processing Order &amp; Payment...</span>
+              ) : paymentMethod === 'ONLINE' ? (
+                <>
+                  <CreditCard className="w-4 h-4" />
+                  <span>Pay ₹{totalPrice.toFixed(2)} Online</span>
+                </>
               ) : (
                 <>
                   <MessageSquare className="w-4 h-4 fill-white" />
